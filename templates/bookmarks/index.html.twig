@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Управление закладками ({{ pagination.totalItemCount }}){% endblock %}
+
+{% block content %}
+    <h1>Управление всеми закладками</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Заголовок страницы</th>
+                <th>Favicon</th>
+                <th>Url страницы</th>
+                <th>Дата добавления</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bookmark in pagination %}
+                <tr>
+                    <td>{{ bookmark.pageTitle }}</td>
+                    <td>{{ bookmark.favicon }}</td>
+                    <td>{{ bookmark.url }}</td>
+                    <td>{{ bookmark.createdAt|date("d.m.Y H:i:s") }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {{ knp_pagination_render(pagination) }}
+{% endblock %}

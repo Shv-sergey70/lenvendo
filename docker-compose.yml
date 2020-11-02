@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  mysql:
+    container_name: mysql_lenvendo
+    build: ./docker/mysql
+    image: app_symfony/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - symfony_backend
+
+networks:
+  symfony_backend:
+    driver: bridge
