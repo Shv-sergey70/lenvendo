@@ -12,7 +12,7 @@
                 <th>Favicon</th>
                 <th>Url страницы</th>
                 <th>META Description</th>
-                <th>META Keywords</th>
+                <th>META Keywords ({{ bookmark.keywords|length }})</th>
                 <th>Дата добавления</th>
             </tr>
         </thead>
@@ -22,7 +22,11 @@
                 <td>{{ bookmark.favicon }}</td>
                 <td>{{ bookmark.url }}</td>
                 <td>{{ bookmark.description }}</td>
-                <td>keywords TODO</td>
+                <td>
+                    {% for keyword in bookmark.keywords %}
+                        <span>{{ keyword.name }}</span><br><br>
+                    {% endfor %}
+                </td>
                 <td>{{ bookmark.createdAt|date("d.m.Y H:i:s") }}</td>
             </tr>
         </tbody>

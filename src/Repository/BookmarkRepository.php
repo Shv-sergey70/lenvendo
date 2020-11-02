@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Bookmark;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -30,7 +31,23 @@ class BookmarkRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('b')
             ->orderBy('b.createdAt', 'DESC')
-            ->setMaxResults(10)
-        ;
+            ->setMaxResults(10);
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return mixed
+     * @throws NonUniqueResultException
+     */
+    public function findByIdWithKeywords(int $id)
+    {
+        return $this->createQueryBuilder('b')
+            ->leftJoin('b.keywords', 'k')
+            ->addSelect('k')
+            ->andWhere('b.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

@@ -3,9 +3,11 @@
 namespace App\DataFixtures;
 
 use App\Entity\Bookmark;
+use App\Entity\Keyword;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class BookmarkFixtures extends BaseFixtures
+class BookmarkFixtures extends BaseFixtures implements DependentFixtureInterface
 {
     private const BOOKMARKS_NUMBER = 100;
 
@@ -22,6 +24,24 @@ class BookmarkFixtures extends BaseFixtures
                 ->setDescription($this->faker->text)
                 ->setCreatedAt($this->faker->dateTimeThisMonth)
             ;
+
+            for ($i = 0; $i < $this->faker->numberBetween(0, 5); $i++) {
+                /** @var Keyword $keyword */
+                $keyword = $this->getRandomReference(Keyword::class);
+
+                $bookmark->addKeyword($keyword);
+            }
         });
     }
+
+    /**
+     * @return array
+     */
+    public function getDependencies()
+    {
+        return [
+            KeywordFixtures::class
+        ];
+    }
+
 }

@@ -50,7 +50,7 @@ class BookmarksController extends AbstractController
      */
     public function detail(BookmarkRepository $bookmarkRepository, int $id): Response
     {
-        $bookmark = $bookmarkRepository->find($id);
+        $bookmark = $bookmarkRepository->findByIdWithKeywords($id);
 
         if (!$bookmark) {
             throw $this->createNotFoundException("Not found bookmark with id {$id}");
@@ -85,24 +85,24 @@ class BookmarksController extends AbstractController
             }
         }
 
-        if (!$isBookmarkExist) {
-            if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-
-            }
-
-            $faker = Factory::create();
-
-            $entity = new Bookmark();
-            $entity->setUrl($url)
-                ->setFavicon($faker->url)
-                ->setPageTitle($faker->text(25))
-                ->setDescription($faker->text);
-
-            $entityManager->persist($entity);
-            $entityManager->flush();
-
-            return new RedirectResponse($urlGenerator->generate('app_bookmarks'));
-        }
+//        if (!$isBookmarkExist) {
+//            if (filter_var($url, FILTER_VALIDATE_URL) === false) {
+//
+//            }
+//
+//            $faker = Factory::create();
+//
+//            $entity = new Bookmark();
+//            $entity->setUrl($url)
+//                ->setFavicon($faker->url)
+//                ->setPageTitle($faker->text(25))
+//                ->setDescription($faker->text);
+//
+//            $entityManager->persist($entity);
+//            $entityManager->flush();
+//
+//            return new RedirectResponse($urlGenerator->generate('app_bookmarks'));
+//        }
 
         return $this->render('bookmarks/add.html.twig', [
             'alreadyExists' => $isBookmarkExist,
