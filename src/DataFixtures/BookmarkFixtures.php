@@ -18,7 +18,7 @@ class BookmarkFixtures extends BaseFixtures
             $bookmark
                 ->setUrl($this->faker->url)
                 ->setFavicon($this->faker->url)
-                ->setPageTitle($this->faker->title)
+                ->setPageTitle($this->faker->text(25))
                 ->setDescription($this->faker->text)
                 ->setCreatedAt($this->faker->dateTimeThisMonth)
             ;

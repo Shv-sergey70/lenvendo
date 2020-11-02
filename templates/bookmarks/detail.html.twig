@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Детальный просмотр закладки{% endblock %}
+
+{% block content %}
+    <h1>Детальный просмотр закладки</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Заголовок страницы</th>
+                <th>Favicon</th>
+                <th>Url страницы</th>
+                <th>META Description</th>
+                <th>META Keywords</th>
+                <th>Дата добавления</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ bookmark.pageTitle }}</td>
+                <td>{{ bookmark.favicon }}</td>
+                <td>{{ bookmark.url }}</td>
+                <td>{{ bookmark.description }}</td>
+                <td>keywords TODO</td>
+                <td>{{ bookmark.createdAt|date("d.m.Y H:i:s") }}</td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

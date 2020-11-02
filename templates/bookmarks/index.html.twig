@@ -1,9 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Управление закладками ({{ pagination.totalItemCount }}){% endblock %}
+{% block title %}Управление закладками{% endblock %}
 
 {% block content %}
-    <h1>Управление всеми закладками</h1>
+    <h1>Управление всеми закладками ({{ pagination.totalItemCount }})</h1>
 
     <table class="table table-striped">
         <thead>
@@ -17,7 +17,9 @@
         <tbody>
             {% for bookmark in pagination %}
                 <tr>
-                    <td>{{ bookmark.pageTitle }}</td>
+                    <td>
+                        <a href="{{ path('app_bookmarks_detail', {id: bookmark.id}) }}">{{ bookmark.pageTitle }}</a>
+                    </td>
                     <td>{{ bookmark.favicon }}</td>
                     <td>{{ bookmark.url }}</td>
                     <td>{{ bookmark.createdAt|date("d.m.Y H:i:s") }}</td>
