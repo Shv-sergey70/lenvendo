@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Bookmark;
+use App\Form\BookmarkFormType;
 use App\Repository\BookmarkRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Faker\Factory;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -47,6 +49,7 @@ class BookmarksController extends AbstractController
      * @Route("/bookmarks/{id}", name="app_bookmarks_detail")
      *
      * @return Response
+     * @throws NonUniqueResultException
      */
     public function detail(BookmarkRepository $bookmarkRepository, int $id): Response
     {
@@ -63,9 +66,7 @@ class BookmarksController extends AbstractController
 
     /**
      * @param Request                $request
-     * @param BookmarkRepository     $bookmarkRepository
      * @param EntityManagerInterface $entityManager
-     * @param UrlGeneratorInterface  $urlGenerator
      *
      * @Route("/add", name="app_bookmarks_add")
      *
@@ -73,39 +74,32 @@ class BookmarksController extends AbstractController
      */
     public function add(
         Request $request,
-        BookmarkRepository $bookmarkRepository,
-        EntityManagerInterface $entityManager,
-        UrlGeneratorInterface $urlGenerator
+        EntityManagerInterface $entityManager
     ): Response {
-        $url = $request->query->get('url');
+        $form = $this->createForm(BookmarkFormType::class);
 
-        if (! empty($url)) {
-            if ($bookmarkRepository->findBy(['url' => $url])) {
-                $error = 'Такая закладка уже существует';
-            }
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $faker = Factory::create();
+            /** @var Bookmark $bookmark */
+            $bookmark = $form->getData();
+
+            $bookmark
+                ->setFavicon($faker->url)
+                ->setPageTitle($faker->text(25))
+                ->setDescription($faker->text);
+
+            $entityManager->persist($bookmark);
+            $entityManager->flush();
+
+            $this->addFlash('flash_message', 'Закладка успешно создана!');
+
+            return $this->redirectToRoute('app_bookmarks_detail', ['id' => $bookmark->getId()]);
         }
 
-//        if (!$isBookmarkExist) {
-//            if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-//
-//            }
-//
-//            $faker = Factory::create();
-//
-//            $entity = new Bookmark();
-//            $entity->setUrl($url)
-//                ->setFavicon($faker->url)
-//                ->setPageTitle($faker->text(25))
-//                ->setDescription($faker->text);
-//
-//            $entityManager->persist($entity);
-//            $entityManager->flush();
-//
-//            return new RedirectResponse($urlGenerator->generate('app_bookmarks'));
-//        }
-
         return $this->render('bookmarks/add.html.twig', [
-            'alreadyExists' => $isBookmarkExist,
+            'bookmarkForm' => $form->createView()
         ]);
     }
 }

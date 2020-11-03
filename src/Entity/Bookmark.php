@@ -3,10 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\BookmarkRepository;
+use App\Validator\UniqueUrl;
+use App\Validator\Url;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @ORM\Entity(repositoryClass=BookmarkRepository::class)
@@ -24,6 +27,9 @@ class Bookmark
 
     /**
      * @ORM\Column(type="string", length=500)
+     * @NotBlank(message="Url-адрес не должен быть пустым")
+     * @Url()
+     * @UniqueUrl()
      */
     private $url;
 

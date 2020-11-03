@@ -24,6 +24,13 @@
             </div>
         </nav>
         <section class="container">
+            {% if app.session.flashBag.peek('flash_message')|length > 0 %}
+                <div class="alert alert-success" role="alert">
+                    {% for message in app.flashes('flash_message') %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% block content %}{% endblock %}
         </section>
 

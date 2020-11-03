@@ -5,17 +5,14 @@
 {% block content %}
     <h1>Добавление новой закладки</h1>
 
-    {% if alreadyExists %}
-        <div class="alert alert-primary" role="alert">
-            Закладка с таким url уже существует!
-        </div>
-    {% endif %}
+{#    {% if alreadyExists %}#}
+{#        <div class="alert alert-primary" role="alert">#}
+{#            Закладка с таким url уже существует!#}
+{#        </div>#}
+{#    {% endif %}#}
 
-    <form method="get">
-        <div class="form-group">
-            <label for="url">Url закладки:</label>
-            <input type="text" class="form-control" id="url" placeholder="Введите url" name="url" value="{{ app.request.query.get('url') }}">
-        </div>
+    {{ form_start(bookmarkForm) }}
+        {{ form_widget(bookmarkForm) }}
         <button type="submit" class="btn btn-primary">Отправить</button>
-    </form>
+    {{ form_end(bookmarkForm) }}
 {% endblock %}
