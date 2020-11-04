@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Bookmark;
 use App\Form\BookmarkFormType;
 use App\Repository\BookmarkRepository;
+use App\Service\PageLoader\LoaderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Faker\Factory;
@@ -65,12 +66,13 @@ class BookmarksController extends AbstractController
     /**
      * @param Request                $request
      * @param EntityManagerInterface $entityManager
+     * @param LoaderInterface        $loader
      *
      * @Route("/add", name="app_bookmarks_add")
      *
      * @return Response
      */
-    public function add(Request $request, EntityManagerInterface $entityManager): Response {
+    public function add(Request $request, EntityManagerInterface $entityManager, LoaderInterface $loader): Response {
         $form = $this->createForm(BookmarkFormType::class);
 
         $form->handleRequest($request);
@@ -79,6 +81,8 @@ class BookmarksController extends AbstractController
             $faker = Factory::create();
             /** @var Bookmark $bookmark */
             $bookmark = $form->getData();
+
+            $loader->downloadPage($bookmark->getUrl());
 
             $bookmark
                 ->setFavicon($faker->url)
