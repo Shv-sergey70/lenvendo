@@ -1,5 +1,4 @@
 .idea
-public/images/favicons/favicon_*.ico
 
 ###> symfony/framework-bundle ###
 /.env.local
