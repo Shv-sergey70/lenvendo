@@ -20,7 +20,9 @@
                     <td>
                         <a href="{{ path('app_bookmarks_detail', {id: bookmark.id}) }}">{{ bookmark.pageTitle }}</a>
                     </td>
-                    <td>{{ bookmark.favicon }}</td>
+                    <td>
+                        <img src="{{ asset(bookmark.faviconPath) }}">
+                    </td>
                     <td>{{ bookmark.url }}</td>
                     <td>{{ bookmark.createdAt|date("d.m.Y H:i:s") }}</td>
                 </tr>

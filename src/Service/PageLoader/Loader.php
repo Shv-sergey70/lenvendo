@@ -2,18 +2,17 @@
 
 namespace App\Service\PageLoader;
 
-use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\Filesystem\Filesystem;
+use App\Service\PageLoader\Exception\LoaderException;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class Loader implements LoaderInterface
 {
+    private const SUCCESS_STATUS_CODE = 200;
     private const METHOD_GET = 'GET';
     private const FAVICON_URL = 'http://www.google.com/s2/favicons?domain=';
-    /**
-     * @var Filesystem
-     */
-    protected $filesystem;
 
     /** @var HttpClient */
     private $client;
@@ -21,38 +20,61 @@ class Loader implements LoaderInterface
     /**
      * Loader constructor
      */
-    public function __construct(Filesystem $filesystem)
+    public function __construct()
     {
         $this->client = HttpClient::create();
-        $this->filesystem = $filesystem;
     }
 
     /**
      * @param string $url
+     *
+     * @return Response
+     *
+     * @throws LoaderException
      */
-    public function downloadPage(string $url)
+    public function download(string $url): Response
     {
-        $response = $this->client->request(self::METHOD_GET, $url);
+        try {
+            $pageResponse = $this->downloadPage($url);
+            $faviconResponse = $this->downloadFavicon($url);
 
-        if ($response->getStatusCode() === 200) {
-            $crawler = new Crawler($response->getContent());
+            if ($pageResponse->getStatusCode() !== self::SUCCESS_STATUS_CODE) {
+                throw new LoaderException("Bad status code from page response {$pageResponse->getStatusCode()}");
+            }
 
-            $title = $crawler->filterXPath('//title')->text();
-            $keywordsRaw = $crawler->filterXPath("//meta[@name='keywords']")->first()->attr('content');
-            $description = $crawler->filterXPath("//meta[@name='description']")->first()->attr('content');
+            if ($faviconResponse->getStatusCode() !== self::SUCCESS_STATUS_CODE) {
+                throw new LoaderException("Bad status code from favicon response {$faviconResponse->getStatusCode()}");
+            }
 
-            $keywords = $this->getFormattedKeywords($keywordsRaw);
-            $faviconName = $this->getNameForFavicon($url);
-            $favicon = $this->getFavicon($this->getFaviconUrl($url));
-
-            dd($title, $keywords, $description, $faviconName);
-
-            $this->saveFavicon($faviconName, $favicon);
-
-            return new Response($title, $keywords, $description, $faviconName);
-        } else {
-            dd("Bad response {$response->getStatusCode()}");
+            return new Response(
+                $pageResponse->getContent(),
+                new Favicon($faviconResponse->getContent(), $url)
+            );
+        } catch (ExceptionInterface $e) {
+            throw new LoaderException();
         }
+    }
+
+    /**
+     * @param string $url
+     *
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     */
+    private function downloadPage(string $url): ResponseInterface
+    {
+        return $this->client->request(self::METHOD_GET, $url);
+    }
+
+    /**
+     * @param string $url
+     *
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     */
+    private function downloadFavicon(string $url): ResponseInterface
+    {
+        return $this->client->request(self::METHOD_GET, $this->getFaviconUrl($url));
     }
 
     /**
@@ -60,41 +82,8 @@ class Loader implements LoaderInterface
      *
      * @return string
      */
-    private function getFaviconUrl(string $url) {
+    private function getFaviconUrl(string $url): string
+    {
         return self::FAVICON_URL . $url;
-    }
-
-    private function getFavicon(string $faviconUrl) {
-        return $this->client->request(self::METHOD_GET, $faviconUrl)->getContent();
-    }
-
-    private function getPathForSavingFavicon(string $name) {
-        return "images/favicons/{$name}";
-    }
-
-    private function getHost(string $url) {
-        return parse_url($url, PHP_URL_HOST);
-    }
-
-    private function getNameForFavicon(string $url) {
-        return str_replace('.', '_', parse_url($url, PHP_URL_HOST)) . '.ico';
-    }
-
-    private function saveFavicon(string $faviconName, string $favicon) {
-        $this->filesystem->appendToFile(
-            $this->getPathForSavingFavicon($faviconName),
-            $favicon
-        );
-    }
-
-    /**
-     * @param string $keywords
-     *
-     * @return array
-     */
-    private function getFormattedKeywords(string $keywords) {
-        $explodedKeywords = explode(',', $keywords);
-
-        return array_map('trim', $explodedKeywords);
     }
 }

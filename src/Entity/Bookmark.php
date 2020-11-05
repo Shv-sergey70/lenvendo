@@ -104,6 +104,10 @@ class Bookmark
         return $this->favicon;
     }
 
+    public function getFaviconPath() {
+        return "images/favicons/{$this->getFavicon()}";
+    }
+
     public function setFavicon(string $favicon): self
     {
         $this->favicon = $favicon;

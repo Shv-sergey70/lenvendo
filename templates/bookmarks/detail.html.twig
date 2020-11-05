@@ -19,7 +19,9 @@
         <tbody>
             <tr>
                 <td>{{ bookmark.pageTitle }}</td>
-                <td>{{ bookmark.favicon }}</td>
+                <td>
+                    <img src="{{ asset(bookmark.faviconPath) }}">
+                </td>
                 <td>{{ bookmark.url }}</td>
                 <td>{{ bookmark.description }}</td>
                 <td>

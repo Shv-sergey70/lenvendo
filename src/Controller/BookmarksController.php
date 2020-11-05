@@ -3,14 +3,17 @@
 namespace App\Controller;
 
 use App\Entity\Bookmark;
+use App\Entity\Keyword;
 use App\Form\BookmarkFormType;
 use App\Repository\BookmarkRepository;
+use App\Service\PageLoader\FaviconHandler;
 use App\Service\PageLoader\LoaderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Faker\Factory;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -78,16 +81,27 @@ class BookmarksController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $faker = Factory::create();
             /** @var Bookmark $bookmark */
             $bookmark = $form->getData();
 
-            $loader->downloadPage($bookmark->getUrl());
+            $response = $loader->download($bookmark->getUrl());
+            $favicon = $response->getFavicon();
+
+            (new FaviconHandler(new Filesystem(), $favicon))->save();
 
             $bookmark
-                ->setFavicon($faker->url)
-                ->setPageTitle($faker->text(25))
-                ->setDescription($faker->text);
+                ->setFavicon($response->getFavicon()->getName())
+                ->setPageTitle($response->getTitle())
+                ->setDescription($response->getDescription());
+
+            foreach ($response->getKeywords() as $keyword) {
+                $keywordEntity = new Keyword();
+                $keywordEntity->setName($keyword);
+
+                $entityManager->persist($keywordEntity);
+
+                $bookmark->addKeyword($keywordEntity);
+            }
 
             $entityManager->persist($bookmark);
             $entityManager->flush();
