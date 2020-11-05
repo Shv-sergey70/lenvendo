@@ -51,7 +51,7 @@ class Loader implements LoaderInterface
                 new Favicon($faviconResponse->getContent(), $url)
             );
         } catch (ExceptionInterface $e) {
-            throw new LoaderException();
+            throw new LoaderException("Can't get response. Error: {$e->getMessage()}");
         }
     }
 

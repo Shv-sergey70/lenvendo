@@ -6,6 +6,7 @@ use App\Entity\Bookmark;
 use App\Entity\Keyword;
 use App\Form\BookmarkFormType;
 use App\Repository\BookmarkRepository;
+use App\Service\PageLoader\Exception\LoaderException;
 use App\Service\PageLoader\FaviconHandler;
 use App\Service\PageLoader\LoaderInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -84,7 +85,19 @@ class BookmarksController extends AbstractController
             /** @var Bookmark $bookmark */
             $bookmark = $form->getData();
 
-            $response = $loader->download($bookmark->getUrl());
+            try {
+                $response = $loader->download($bookmark->getUrl());
+            } catch (LoaderException $e) {
+                $this->addFlash(
+                    'flash_message',
+                    'Не удалось получить данные по закладке. Проверьте работоспособность сайта по указанному url'
+                );
+
+                return $this->render('bookmarks/add.html.twig', [
+                    'bookmarkForm' => $form->createView()
+                ]);
+            }
+
             $favicon = $response->getFavicon();
 
             (new FaviconHandler(new Filesystem(), $favicon))->save();
